@@ -1,0 +1,153 @@
+---
+title: "Consumer Market Data"
+author: "Andrew Broek"
+date: "10/27/25"
+format: revealjs
+table-of-contents: true
+html:
+    code-fold: true
+    
+---
+
+# Consumer Demographics
+
+## Gender Identity
+@fig-GenderPurch Number of purchases vs. Consumer Gender Identity 
+```{r}
+#| label: fig-GenderPurch
+#| fig-cap: Data shows a vast majority of our consumers are cis-gendered and are mostly women
+#| warning: false
+#| code-fold: true
+#| code-summary: Show code
+
+library(ggplot2)
+Market <- read.csv(file="C:\\Users\\abroek\\OneDrive - Chapman University\\Desktop\\2kool4\\CPSC 540\\Assignment 1\\marketingcampaign.csv", stringsAsFactors=TRUE)
+ggplot(data=Market, 
+mapping = aes(x=gender, y=past_purchases, fill=gender)) +
+     geom_bar(stat='identity') +
+    labs(x="Gender", y="# of Purchases") 
+
+   
+
+```
+## Age
+@fig-Age Number of purchases vs. consumer age demographics
+
+```{r}
+#| label: fig-Age
+#| fig-cap: Shows that our consumer base is heavily weighed towards young adults and teenagers
+#| warning: false
+#| code-fold: true
+#| code-summary: Show code
+
+ggplot(data=Market, 
+mapping = aes(x=age, y=past_purchases, fill=age)) + 
+    geom_bar(stat='identity')+
+    labs(x="Age", y="# of Purchases")
+```
+
+
+## Predictive assessment
+
+
+@fig-Pred   
+
+```{r}
+#| label: fig-Pred
+#| fig-cap: Negative Binomial machine learning analysis modeling consumer purchase likelihood
+#| warning: false
+#| code-fold: true
+#| code-summary: Show code
+
+library(MASS)
+ans<-glm.nb(past_purchases~age+gender+age*gender, data=Market )
+ggplot(data=Market, 
+mapping = aes(x=age, y=past_purchases))  +
+  geom_point(alpha=1)+
+  geom_smooth(data=ans, method=glm.nb, se=FALSE)+
+  facet_wrap(~gender)+
+  labs(x="Age", y="# of Purchases")
+```
+
+# Advertising effectivness
+
+## Revenue by Advertisement
+@fig-camp_rev
+```{r}
+#| label: fig-camp_rev
+#| fig-cap: While each campaign performed similarly, B came out ahead in raw revenue
+#| warning: false
+#| code-fold: true
+#| code-summary: show code
+ggplot(data=Market, aes(x=campaign_variant, y=campaign_spend))+
+  geom_bar(stat="identity", aes(colour=(campaign_variant)))+
+  labs(x="Campaign", y="Revenue")
+```
+
+## Age Percentile
+@fig-Platform_age 
+```{r}
+#| label: fig-Platform_age
+#| fig-cap: 50% quantile line shows that consumers using Facebook are older than all other platforms. Furthermore, Google searches favor slightly younger consumers while IG and TikTok are roughly equal. 
+#| warning: false
+#| code-fold: true
+#| code-summary: show code
+
+ggplot(data=Market, aes(x=ad_source, y=age, fill=ad_source))+
+  geom_violin(draw_quantiles =  0.5)+
+  labs(x="Platform", y="Age")
+```
+
+## Consumer platform spending
+@fig-adS 
+```{r}
+#| label: fig-adS
+#| fig-cap: Campaign B has a slim but clear advantage on internet platforms where our key demographics frequent
+#| warning: false
+#| code-fold: true
+#| code-summary: show code
+ggplot(data=Market, aes(fill= campaign_variant, x=ad_source, y=campaign_spend))+
+  geom_bar(position="dodge", stat="identity")+
+  labs(x="Platform", y="Revenue")
+```
+
+## Consumer spending by age and Campaign
+@fig-Camp_age 
+```{r}
+#| label: fig-Camp_age
+#| fig-cap: Across all ad campaigns, consumers under 20 are still prevalent, however consumers between 40-60 gravitate towards campaign A. Furthermore campaigns A and C are more appealing to older consumers than campaign B.
+#| warning: false
+#| code-fold: true
+#| code-summary: show code
+
+library(patchwork)
+
+subdataA <- Market[which (Market$campaign_variant=="A"),]
+
+
+plotA<-ggplot(data=subdataA, aes( x=age))+
+  geom_density( fill="#f8766d")+
+  labs(x="Age", y="Density")
+  
+  subdataB <- Market[which (Market$campaign_variant=="B"),]
+
+
+plotB<-ggplot(data=subdataB, aes(fill= campaign_variant, x=age))+
+  geom_density(fill="#00ba38")+
+  labs(x="Age", y="Density")
+
+subdataC <- Market[which (Market$campaign_variant=="C"),]
+
+
+plotC<-ggplot(data=subdataC, aes(fill= campaign_variant, x=age))+
+  geom_density(fill="#619cff")+  
+  labs(x="Age", y="Density")
+
+plotA/plotB/plotC+plot_layout(axes="collect")+plot_annotation(tag_levels='A')
+```
+
+# Post-mortem
+## Conclusions
+Analysis shows that the primary consumer demographic are young cis-gendered women. While each Advertisement campagin genereated similar revenue, Campaign B came out on top and drew higher traffic from platforms where our key demographics are present. Therefore, Campaign B should be the primary campaign going forward. 
+
+  
